@@ -27,6 +27,23 @@ function updateTimerDisplay() {
     timerDiv.textContent = `Time: ${mm}:${ss}`;
   }
 }
+
+function isBoardComplete() {
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  for (let i = 0; i < SIZE; i++) {
+    for (let j = 0; j < SIZE; j++) {
+      const idx = i * SIZE + j;
+      const inp = inputs[idx];
+      if (inp.disabled) continue; // prefilled or hinted
+      const userVal = parseInt(inp.value) || 0;
+      if (userVal !== solution[i][j]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
@@ -48,6 +65,11 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+        if (isBoardComplete()) {
+          document.getElementById('message').innerText = 'Congratulations! Puzzle solved!';
+          document.getElementById('message').style.color = '#388e3c';
+          stopTimer();
+        }
       });
       rowDiv.appendChild(input);
     }
