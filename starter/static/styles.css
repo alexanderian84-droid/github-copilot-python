@@ -18,6 +18,7 @@ body {
     --button-text: #fff;
     --button-hover: #1565c0;
     --message-color: #d32f2f;
+    --box-alt: rgba(0, 0, 0, 0.04);
 }
 
 body.dark {
@@ -31,6 +32,7 @@ body.dark {
     --button-text: #fff;
     --button-hover: #357ab8;
     --message-color: #f48fb1;
+    --box-alt: rgba(255, 255, 255, 0.05);
 }
 
 h1 {
@@ -43,12 +45,18 @@ h1 {
     margin: 30px auto;
     border: 4px solid var(--cell-border);
     background: var(--board-bg);
+    background-image:
+      linear-gradient(90deg, var(--box-alt) 0 120px, transparent 120px 240px),
+      linear-gradient(var(--box-alt) 0 120px, transparent 120px 240px);
+    background-size: 240px 240px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     padding: 10px;
+    width: min(100%, 430px);
 }
 
 .sudoku-row {
     display: flex;
+    justify-content: center;
 }
 
 .sudoku-cell {
@@ -64,27 +72,35 @@ h1 {
 }
 
 .sudoku-cell:focus {
-    background: #e0f7fa;
+    background: rgba(144, 202, 249, 0.35);
 }
 
 .sudoku-cell.prefilled {
-    background: #e0e0e0;
+    background: var(--prefilled-bg);
     font-weight: bold;
-    color: #333;
+    color: var(--text);
 }
 
 .sudoku-cell.incorrect {
-    background: #ffcdd2;
+    background: rgba(255, 205, 210, 0.9);
 }
 
 .sudoku-cell:nth-child(3),
 .sudoku-cell:nth-child(6) {
-    border-right: 4px solid #333;
+    border-right: 3px solid var(--cell-border);
 }
 
 .sudoku-row:nth-child(3) .sudoku-cell,
 .sudoku-row:nth-child(6) .sudoku-cell {
-    border-bottom: 4px solid #333;
+    border-bottom: 3px solid var(--cell-border);
+}
+
+.sudoku-row:first-child .sudoku-cell {
+    border-top: 3px solid var(--cell-border);
+}
+
+.sudoku-cell:first-child {
+    border-left: 3px solid var(--cell-border);
 }
 
 .controls {
@@ -97,15 +113,21 @@ h1 {
 }
 
 button {
-    padding: 8px 18px;
+    padding: 8px 14px;
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
+    min-width: 100px;
     border: none;
     background: var(--button-bg);
     color: var(--button-text);
     border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
+    flex: 1 1 100px;
+}
+
+button:hover {
+    transform: translateY(-1px);
 }
 
 button:hover {
@@ -116,4 +138,27 @@ button:hover {
     margin-left: 20px;
     font-size: 16px;
     color: var(--message-color);
+}
+
+@media (max-width: 600px) {
+    #sudoku-board {
+        width: min(100%, 360px);
+    }
+    .sudoku-cell {
+        width: 34px;
+        height: 34px;
+        font-size: 18px;
+    }
+    .controls {
+        gap: 8px;
+    }
+    button {
+        min-width: 90px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    #scoreboard {
+        width: min(100%, 360px);
+        padding: 0 10px;
+    }
 }
