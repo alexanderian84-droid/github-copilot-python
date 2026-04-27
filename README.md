@@ -64,3 +64,20 @@ Use GitHub Copilot to refactor the code for this game to add more advanced featu
 To run all tests, use this command from the project root:
 
     pytest
+## How to run the app
+
+```bash
+cd starter
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+
+Open: http://127.0.0.1:5000 .
+```
+## How to test
+
+From project root:
+``` bash
+python -m pytest
+```
