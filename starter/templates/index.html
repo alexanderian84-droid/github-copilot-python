@@ -8,6 +8,14 @@
 <body>
   <h1>Sudoku Game</h1>
   <div id="timer" style="font-size:1.2em;margin-bottom:10px;">Time: 00:00</div>
+  <div style="margin-bottom:10px;">
+    <label for="difficulty">Difficulty: </label>
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium" selected>Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+  </div>
   <div id="sudoku-board"></div>
   <div class="controls">
     <button id="new-game">New Game</button>
@@ -15,6 +23,10 @@
     <button id="check">Check</button>
     <button id="check-solution">Check Solution</button>
     <span id="message"></span>
+  </div>
+  <div id="scoreboard" style="margin-top:20px;">
+    <h3>Top 10 Scores</h3>
+    <ol id="score-list"></ol>
   </div>
   <script src="/static/main.js"></script>
 </body>

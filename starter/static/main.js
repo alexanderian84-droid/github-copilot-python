@@ -44,13 +44,55 @@ function isBoardComplete() {
   }
   return true;
 }
+
+function loadScores() {
+  try {
+    const scores = localStorage.getItem('sudokuScores');
+    return scores ? JSON.parse(scores) : [];
+  } catch (e) {
+    console.error('Error loading scores:', e);
+    return [];
+  }
+}
+
+function saveScores(scores) {
+  localStorage.setItem('sudokuScores', JSON.stringify(scores));
+}
+
+function addScore(name, time, difficulty) {
+  const scores = loadScores();
+  scores.push({ name, time, difficulty });
+  scores.sort((a, b) => a.time - b.time);
+  const top10 = scores.slice(0, 10);
+  saveScores(top10);
+}
+
+function displayScores() {
+  const scores = loadScores();
+  const scoreList = document.getElementById('score-list');
+  scoreList.innerHTML = '';
+  scores.forEach((score, index) => {
+    const li = document.createElement('li');
+    const mm = String(Math.floor(score.time / 60)).padStart(2, '0');
+    const ss = String(score.time % 60).padStart(2, '0');
+    li.textContent = `${index + 1}. ${score.name} - ${mm}:${ss} (${score.difficulty})`;
+    scoreList.appendChild(li);
+  });
+}
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
 let solution = [];
+let currentDifficulty = 'medium';
 
 function createBoardElement() {
+  console.log('Creating board element');
   const boardDiv = document.getElementById('sudoku-board');
+  console.log('Board div:', boardDiv);
+  if (!boardDiv) {
+    console.error('Sudoku board div not found');
+    return;
+  }
   boardDiv.innerHTML = '';
   for (let i = 0; i < SIZE; i++) {
     const rowDiv = document.createElement('div');
@@ -66,6 +108,11 @@ function createBoardElement() {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
         if (isBoardComplete()) {
+          const name = prompt('Congratulations! Puzzle solved! Enter your name for the scoreboard:');
+          if (name) {
+            addScore(name, timerSeconds, currentDifficulty);
+            displayScores();
+          }
           document.getElementById('message').innerText = 'Congratulations! Puzzle solved!';
           document.getElementById('message').style.color = '#388e3c';
           stopTimer();
@@ -78,6 +125,7 @@ function createBoardElement() {
 }
 
 function renderPuzzle(puz, sol) {
+  console.log('Rendering puzzle', puz, sol);
   puzzle = puz;
   solution = sol;
   createBoardElement();
@@ -101,7 +149,9 @@ function renderPuzzle(puz, sol) {
 }
 
 async function newGame() {
-  const res = await fetch('/new');
+  console.log('Starting new game');
+  currentDifficulty = document.getElementById('difficulty').value;
+  const res = await fetch(`/new?difficulty=${currentDifficulty}`);
   const data = await res.json();
   renderPuzzle(data.puzzle, data.solution);
   document.getElementById('message').innerText = '';
@@ -195,6 +245,7 @@ window.addEventListener('load', () => {
   document.getElementById('hint').addEventListener('click', hint);
   document.getElementById('check').addEventListener('click', check);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
+  displayScores();
   // initialize
   newGame();
   startTimer();
