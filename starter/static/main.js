@@ -30,6 +30,7 @@ function updateTimerDisplay() {
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
+let solution = [];
 
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
@@ -54,8 +55,9 @@ function createBoardElement() {
   }
 }
 
-function renderPuzzle(puz) {
+function renderPuzzle(puz, sol) {
   puzzle = puz;
+  solution = sol;
   createBoardElement();
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
@@ -79,7 +81,7 @@ function renderPuzzle(puz) {
 async function newGame() {
   const res = await fetch('/new');
   const data = await res.json();
-  renderPuzzle(data.puzzle);
+  renderPuzzle(data.puzzle, data.solution);
   document.getElementById('message').innerText = '';
   startTimer();
 }
@@ -127,9 +129,49 @@ async function checkSolution() {
   }
 }
 
+function hint() {
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  const emptyCells = [];
+  for (let i = 0; i < SIZE; i++) {
+    for (let j = 0; j < SIZE; j++) {
+      const idx = i * SIZE + j;
+      if (!inputs[idx].disabled && inputs[idx].value === '') {
+        emptyCells.push({i, j, idx});
+      }
+    }
+  }
+  if (emptyCells.length > 0) {
+    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const {i, j, idx} = randomCell;
+    inputs[idx].value = solution[i][j];
+    inputs[idx].disabled = true;
+    inputs[idx].className = 'sudoku-cell prefilled';
+  }
+}
+
+function check() {
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  for (let i = 0; i < SIZE; i++) {
+    for (let j = 0; j < SIZE; j++) {
+      const idx = i * SIZE + j;
+      const inp = inputs[idx];
+      if (inp.disabled) continue;
+      const userVal = parseInt(inp.value) || 0;
+      inp.className = 'sudoku-cell';
+      if (userVal !== 0 && userVal !== solution[i][j]) {
+        inp.className = 'sudoku-cell incorrect';
+      }
+    }
+  }
+}
+
 // Wire buttons
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
+  document.getElementById('hint').addEventListener('click', hint);
+  document.getElementById('check').addEventListener('click', check);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   // initialize
   newGame();
