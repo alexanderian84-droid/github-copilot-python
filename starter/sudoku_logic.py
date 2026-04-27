@@ -39,19 +39,55 @@ def fill_board(board):
                 return False
     return True
 
-def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
 
-def generate_puzzle(clues=35):
+def solve_and_count(board, max_solutions=2):
+    """Counts the number of solutions for a given board. Stops at max_solutions."""
+    count = [0]
+
+    def solve(b):
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if b[row][col] == EMPTY:
+                    for num in range(1, SIZE + 1):
+                        if is_safe(b, row, col, num):
+                            b[row][col] = num
+                            solve(b)
+                            b[row][col] = EMPTY
+                    return
+        count[0] += 1
+        if count[0] >= max_solutions:
+            return
+
+    solve(deep_copy(board))
+    return count[0]
+
+def remove_cells_unique(board, clues):
+    # Remove cells while ensuring unique solution
+    cells = [(r, c) for r in range(SIZE) for c in range(SIZE)]
+    random.shuffle(cells)
+    removed = 0
+    total_to_remove = SIZE * SIZE - clues
+    for row, col in cells:
+        if removed >= total_to_remove:
+            break
+        backup = board[row][col]
+        board[row][col] = EMPTY
+        if solve_and_count(board, 2) != 1:
+            board[row][col] = backup  # revert if not unique
+        else:
+            removed += 1
+
+def generate_puzzle(difficulty='medium'):
+    # Difficulty: easy, medium, hard
+    if difficulty == 'easy':
+        clues = 40
+    elif difficulty == 'hard':
+        clues = 28
+    else:
+        clues = 34
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)
-    remove_cells(board, clues)
+    remove_cells_unique(board, clues)
     puzzle = deep_copy(board)
     return puzzle, solution
