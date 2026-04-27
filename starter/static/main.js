@@ -28,6 +28,25 @@ function updateTimerDisplay() {
   }
 }
 
+function getSavedTheme() {
+  return localStorage.getItem('sudokuTheme') || 'light';
+}
+
+function setTheme(mode) {
+  const body = document.body;
+  body.classList.toggle('dark', mode === 'dark');
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.textContent = mode === 'dark' ? 'Light Mode' : 'Dark Mode';
+  }
+  localStorage.setItem('sudokuTheme', mode);
+}
+
+function toggleTheme() {
+  const current = getSavedTheme();
+  setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 function isBoardComplete() {
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
@@ -242,10 +261,12 @@ function check() {
 // Wire buttons
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
   document.getElementById('hint').addEventListener('click', hint);
   document.getElementById('check').addEventListener('click', check);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   displayScores();
+  setTheme(getSavedTheme());
   // initialize
   newGame();
   startTimer();
