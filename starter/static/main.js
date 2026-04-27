@@ -1,3 +1,32 @@
+// Timer variables
+let timerInterval = null;
+let timerSeconds = 0;
+
+function startTimer() {
+  stopTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const timerDiv = document.getElementById('timer');
+  if (timerDiv) {
+    const mm = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+    const ss = String(timerSeconds % 60).padStart(2, '0');
+    timerDiv.textContent = `Time: ${mm}:${ss}`;
+  }
+}
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
@@ -52,6 +81,7 @@ async function newGame() {
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';
+  startTimer();
 }
 
 async function checkSolution() {
@@ -90,6 +120,7 @@ async function checkSolution() {
   if (incorrect.size === 0) {
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
+    stopTimer();
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
@@ -102,4 +133,5 @@ window.addEventListener('load', () => {
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   // initialize
   newGame();
+  startTimer();
 });
