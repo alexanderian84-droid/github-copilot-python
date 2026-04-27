@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-import sudoku_logic
+from . import sudoku_logic
 
 app = Flask(__name__)
 
