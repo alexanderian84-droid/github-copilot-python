@@ -80,7 +80,7 @@ function saveScores(scores) {
 
 function addScore(name, time, difficulty) {
   const scores = loadScores();
-  scores.push({ name, time, difficulty });
+  scores.push({ name, time, difficulty, hintsUsed });
   scores.sort((a, b) => a.time - b.time);
   const top10 = scores.slice(0, 10);
   saveScores(top10);
@@ -94,12 +94,14 @@ function displayScores() {
     const li = document.createElement('li');
     const mm = String(Math.floor(score.time / 60)).padStart(2, '0');
     const ss = String(score.time % 60).padStart(2, '0');
-    li.textContent = `${index + 1}. ${score.name} - ${mm}:${ss} (${score.difficulty})`;
+    let hintsText = (score.hintsUsed !== undefined ? ` Hints: ${score.hintsUsed}` : (score.hints !== undefined ? ` Hints: ${score.hints}` : ""));
+    li.textContent = `${index + 1}. ${score.name} - ${mm}:${ss}${hintsText} (${score.difficulty})`;
     scoreList.appendChild(li);
   });
 }
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
+let hintsUsed = 0;
 let puzzle = [];
 let solution = [];
 let currentDifficulty = 'medium';
@@ -169,6 +171,7 @@ function renderPuzzle(puz, sol) {
 
 async function newGame() {
   console.log('Starting new game');
+  hintsUsed = 0;
   currentDifficulty = document.getElementById('difficulty').value;
   const res = await fetch(`/new?difficulty=${currentDifficulty}`);
   const data = await res.json();
@@ -214,6 +217,12 @@ async function checkSolution() {
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
     stopTimer();
+    // Prompt for name and save score
+    const name = prompt('Congratulations! Puzzle solved! Enter your name for the scoreboard:');
+    if (name) {
+      addScore(name, timerSeconds, currentDifficulty);
+      displayScores();
+    }
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
@@ -235,9 +244,15 @@ function hint() {
   if (emptyCells.length > 0) {
     const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
     const {i, j, idx} = randomCell;
-    inputs[idx].value = solution[i][j];
-    inputs[idx].disabled = true;
-    inputs[idx].className = 'sudoku-cell prefilled';
+    // Safeguard: check if solution is defined and has the correct structure
+    if (solution && Array.isArray(solution) && solution[i] && typeof solution[i][j] !== 'undefined') {
+      inputs[idx].value = solution[i][j];
+      inputs[idx].disabled = true;
+      inputs[idx].className = 'sudoku-cell prefilled';
+      hintsUsed++;
+    } else {
+      alert('Solution not loaded. Please start a new game.');
+    }
   }
 }
 
