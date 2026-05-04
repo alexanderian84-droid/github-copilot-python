@@ -77,14 +77,7 @@ def remove_cells_unique(board, clues):
         else:
             removed += 1
 
-def generate_puzzle(difficulty='medium'):
-    # Difficulty: easy, medium, hard
-    if difficulty == 'easy':
-        clues = 40
-    elif difficulty == 'hard':
-        clues = 28
-    else:
-        clues = 34
+def generate_puzzle(clues=34):
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)

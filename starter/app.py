@@ -20,8 +20,7 @@ def new_game():
     CURRENT['puzzle'] = puzzle
     CURRENT['solution'] = solution
     return jsonify({
-        'puzzle': puzzle,
-        'solution': solution
+        'puzzle': puzzle
     })
 @app.route('/check', methods=['POST'])
 def check_solution():
@@ -50,5 +49,28 @@ def check_solution():
                 return jsonify({'error': 'Malformed board data'}), 400
 
     return jsonify({'incorrect': incorrect})
+
+@app.route('/hint', methods=['POST'])
+def get_hint():
+    data = request.get_json(silent=True)
+    if not data or 'row' not in data or 'col' not in data:
+        return jsonify({'error': 'Invalid request: missing row or col'}), 400
+
+    row = data['row']
+    col = data['col']
+    solution = CURRENT.get('solution')
+    puzzle = CURRENT.get('puzzle')
+
+    if solution is None or puzzle is None:
+        return jsonify({'error': 'No game in progress'}), 400
+
+    if not (0 <= row < sudoku_logic.SIZE and 0 <= col < sudoku_logic.SIZE):
+        return jsonify({'error': 'Invalid row or col'}), 400
+
+    if puzzle[row][col] != 0:
+        return jsonify({'error': 'Cell is already filled'}), 400
+
+    return jsonify({'value': solution[row][col]})
+
 if __name__ == '__main__':
     app.run(debug=True)
